@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: api-teste-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: api-teste
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-teste-app
+    ports:
+      - "5173:5173"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/api-teste
+      JWT_SECRET: fjiojfaisojfioqwjiofj3290ur190ue342143u8129
+      PORT: 5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
